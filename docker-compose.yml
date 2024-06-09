@@ -3,15 +3,6 @@ networks:
 
 services:
 
-  ubuntu:
-    image: ubuntu
-    container_name: oracle-laravel-ubuntu
-    command: tail -f /dev/null
-    volumes:
-      - ./ubuntu:/#
-    networks:
-      - oracle-laravel
-
   nginx:
     image: nginx:stable-alpine
     container_name: oracle-laravel-nginx
@@ -52,7 +43,6 @@ services:
       - oracle-laravel
 
   php:
-    # image: php:7.1.33-fpm
     image: php:8.3.1RC3-fpm
     build:
       context: .
@@ -60,8 +50,18 @@ services:
     container_name: oracle-laravel-php
     volumes:
       - ./src:/var/www/html
-    # ports:
-      # - "9006:9000"
     networks:
       - oracle-laravel
-
+  
+  oracle:
+    ## !! install the image first https://itnext.io/oracle-on-arm-mac-m1-m2-docker-images-99ed67ed6ba6
+    image: oracle/database:19.3.0-ee-slim-faststart
+    container_name: oracle-laravel-oracle
+    environment:
+        - ORACLE_USER=my_user
+        - ORACLE_PASSWORD=my_password
+    ports:
+      - 1523:1521
+      - 5500:5500
+    networks:
+      - oracle-laravel

@@ -20,16 +20,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     docker-php-ext-install ldap
 
-# Check if the MongoDB extension is installed
-# RUN if ! [ -z "$(php -m | grep mongodb)" ]; then \
-#         echo "MongoDB extension is already installed."; \
-#     else \
-#         echo "Installing MongoDB extension..." \
-#         && pecl install mongodb \
-#         && docker-php-ext-enable mongodb \
-#         && echo "MongoDB extension installed successfully."; \
-#     fi
-
 # Update package lists and install dependencies
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y zlib1g-dev libzip-dev
@@ -49,18 +39,6 @@ RUN if ! [ -z "$(php -m | grep zip)" ]; then \
         && echo "Zip extension installed successfully."; \
     fi
 
-# RUN chmod -R 777 /var/www/html/
-
-# Check if the redis extension is installed
-# RUN if ! [ -z "$(php -m | grep redis)" ]; then \
-#         echo "Redis extension is already installed."; \
-#     else \
-#         echo "Installing Redis extension..." \
-#         && pecl install redis \
-#         && docker-php-ext-enable redis \
-#         && echo "Redis extension installed successfully."; \
-#     fi
-
 RUN apt-get update \
     && apt-get install -y git
 
@@ -73,5 +51,26 @@ max_file_uploads = 100\n\
 max_execution_time = -1\n\
 request_terminate_timeout = -1" > /usr/local/etc/php/conf.d/manual-conf.ini
 
-# WORKDIR /var/www/html
-# CMD [ "sh", "-c", "php artisan serve --host=0.0.0.0 --port=9090" ]
+
+# Install Oracle Instant Client and OCI8 extension
+# ENV ORACLE_INSTANT_CLIENT_VERSION=21.6
+# ENV ORACLE_HOME=/usr/local/instantclient
+
+# RUN mkdir -p /usr/local/instantclient \
+#     && cd /usr/local/instantclient \
+#     && curl -O https://download.oracle.com/otn_software/linux/instantclient/${ORACLE_INSTANT_CLIENT_VERSION}0/instantclient-basic-linux.x64-${ORACLE_INSTANT_CLIENT_VERSION}.0.0dbru.zip \
+#     && curl -O https://download.oracle.com/otn_software/linux/instantclient/${ORACLE_INSTANT_CLIENT_VERSION}0/instantclient-sdk-linux.x64-${ORACLE_INSTANT_CLIENT_VERSION}.0.0dbru.zip \
+#     && unzip instantclient-basic-linux.x64-${ORACLE_INSTANT_CLIENT_VERSION}.0.0dbru.zip \
+#     && unzip instantclient-sdk-linux.x64-${ORACLE_INSTANT_CLIENT_VERSION}.0.0dbru.zip \
+#     && rm instantclient-basic-linux.x64-${ORACLE_INSTANT_CLIENT_VERSION}.0.0dbru.zip \
+#     && rm instantclient-sdk-linux.x64-${ORACLE_INSTANT_CLIENT_VERSION}.0.0dbru.zip \
+#     && ln -s ${ORACLE_HOME}/libclntsh.so.${ORACLE_INSTANT_CLIENT_VERSION} ${ORACLE_HOME}/libclntsh.so \
+#     && ln -s ${ORACLE_HOME}/libocci.so.${ORACLE_INSTANT_CLIENT_VERSION} ${ORACLE_HOME}/libocci.so \
+#     && echo ${ORACLE_HOME} > /etc/ld.so.conf.d/oracle-instantclient.conf \
+#     && ldconfig
+
+# RUN docker-php-ext-configure oci8 --with-oci8=instantclient,${ORACLE_HOME} \
+#     && docker-php-ext-install oci8
+
+# # Verify OCI8 installation
+# RUN php -m | grep oci8
